@@ -1,0 +1,6 @@
+{
+    "DISCORD": {
+        "TOKEN": "[your own discord bot token]", 
+        "PREFIX": "!"
+    }
+}
