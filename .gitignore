@@ -1,3 +1,4 @@
 .DS_Store
 __pycache__/
 yolov8-venv
+configs/config.json

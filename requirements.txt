@@ -1,3 +1,4 @@
 wheel
 Discord.py
 requests
+pillow

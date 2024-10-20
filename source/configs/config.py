@@ -9,5 +9,5 @@ class Config:
         """
         載入設定檔
         """
-        with open('configs/config.json') as f:
+        with open('source/configs/config.json') as f:
             return json.load(f)
