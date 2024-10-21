@@ -1,0 +1,9 @@
+{
+    "DISCORD": {
+        "TOKEN": "your/own/discord/bot/token", 
+        "PREFIX": "!"
+    },
+    "DetectAPI": {
+        "Url": "your/own/detect/api/url"
+    }
+}

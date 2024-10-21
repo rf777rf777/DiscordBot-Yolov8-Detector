@@ -10,7 +10,7 @@ class Events(commands.Cog):
         if message.author == self.bot.user:
             return
         
-        # 如果訊息是命令則不處理
+        #if message is command
         if message.content.startswith('!'):
             #await self.bot.process_commands(message)
             return

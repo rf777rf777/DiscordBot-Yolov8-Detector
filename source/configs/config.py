@@ -7,7 +7,7 @@ class Config:
     @staticmethod
     def get_config():
         """
-        載入設定檔
+        get config content from config.json
         """
         with open('source/configs/config.json') as f:
             return json.load(f)
