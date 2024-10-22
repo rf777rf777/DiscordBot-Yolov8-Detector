@@ -19,13 +19,17 @@ class Commands(commands.Cog):
             await ctx.send('Please upload a image。')
             return
         
-        #To show bot is typing
-        await ctx.typing()            
+        #All deteect results
+        all_detect_result_stream: list[io.BytesIO] = []
+        
         for attachment in ctx.message.attachments:
             print(attachment.filename)
             #Check if file is image
             if not attachment.filename.lower().endswith(('png', 'jpg', 'jpeg')):
                 continue
+            
+            await ctx.send(f"Detecting...{attachment.filename}...🔎🔎🔎")
+       
             #Read data as bytes
             img_data = await attachment.read()
 
@@ -37,15 +41,19 @@ class Commands(commands.Cog):
                 continue
                 
             result_stream = yolov8_service().detect_object(image, attachment.filename)
-            
+
             if result_stream is None:
-                await ctx.send(f"Object Detect Fail 😓")
+                await ctx.send(f"{attachment.filename} Object Detect Fail 😓")
                 continue  
-                         
-            await ctx.send("Detect 😎：", file=discord.File(
-                fp=result_stream, 
-                filename=f'{attachment.filename}_detected.jpg'))
-     
+            
+            all_detect_result_stream.append(result_stream)
+        
+        if len(all_detect_result_stream) <= 0:
+            return
+
+        files = [discord.File(fp=stream, filename=f'detected_{i}.jpg') for i, stream in enumerate(all_detect_result_stream)]
+        await ctx.send("Detected 😎：", files=files)      
+        #await ctx.send("Detect 😎：", file=discord.File(fp=result_stream, filename=f'{attachment.filename}_detected.jpg'))
                 
 async def setup(bot):
     await bot.add_cog(Commands(bot))
