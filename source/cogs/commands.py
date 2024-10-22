@@ -30,8 +30,12 @@ class Commands(commands.Cog):
             img_data = await attachment.read()
 
             #Get PIL Image
-            image = Image.open(io.BytesIO(img_data))
-
+            try:                      
+                image = Image.open(io.BytesIO(img_data))
+            except:                  
+                print('Get PIL error!')
+                continue
+                
             result_stream = yolov8_service().detect_object(image, attachment.filename)
             
             if result_stream is None:
