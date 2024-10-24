@@ -9,5 +9,5 @@ class Config:
         """
         get config content from config.json
         """
-        with open('source/configs/config.json') as f:
+        with open('configs/config.json') as f:
             return json.load(f)
