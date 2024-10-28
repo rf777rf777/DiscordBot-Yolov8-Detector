@@ -11,6 +11,14 @@ class Commands(commands.Cog):
     @commands.command()
     async def hello(self, ctx):
         await ctx.send('Hello from command!')
+        
+    @commands.command('di')
+    async def d(self, ctx):
+        item = ctx.message.attachments[0]
+        img_data = await item.read()
+        image = Image.open(io.BytesIO(img_data))
+        result_stream = yolov8_service().detect_object_info(image, item.filename)
+        await ctx.send("Detect 😎：", file=discord.File(fp=result_stream, filename=f'{item.filename}_detected.jpg'))
 
     @commands.command()
     async def detect(self, ctx):

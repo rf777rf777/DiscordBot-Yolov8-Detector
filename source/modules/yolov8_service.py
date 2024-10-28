@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import io
 import requests
 from configs.config import Config
@@ -7,6 +7,47 @@ class yolov8_service:
     def __init__(self):
         pass
     
+    def detect_object_info(self, image: Image, filename: str) -> io.BytesIO:
+        new_stream = self.__resizeAndGetImageStream(image=image)
+        
+        #Post to detect api
+        files = {'file': (filename, new_stream, 'multipart/form-data')}
+        response = requests.put('http://45.130.166.218:8000/Detection/Image/Info', files=files) 
+        #print(response.json())
+        
+        image = Image.open(new_stream)
+        draw = ImageDraw.Draw(image)
+       
+        for detection in response.json()['detections']:
+            
+            #draw frame
+            x, y, w, h = detection['box'][0]
+            top_left = (x - w / 2, y - h / 2)
+            bottom_right = (x + w / 2, y + h / 2)
+            draw.rectangle([top_left, bottom_right], outline="red", width=5)
+            
+            className = detection['className']
+            confidence = round(detection['confidence'], 2)
+            font = ImageFont.load_default() 
+            
+            label_text = f"{className} {confidence}"
+
+            bbox = draw.textbbox((0, 0), label_text, font=font, font_size=16)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            
+            #text is on the top of frame
+            label_position = (top_left[0], top_left[1] - text_height - 5)  
+            
+            #draw label
+            draw.rectangle([label_position, (label_position[0] + text_width, label_position[1] + text_height)], fill="black")
+            draw.text(label_position, label_text, fill="white", font=font)
+            
+        output = io.BytesIO()
+        image.save(output, format="JPEG")
+        output.seek(0)  
+        return output
+ 
     def detect_object(self, image: Image, filename: str) -> io.BytesIO: 
         new_stream = self.__resizeAndGetImageStream(image=image)
         #Post to detect api
