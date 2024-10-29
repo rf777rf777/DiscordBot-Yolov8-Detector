@@ -15,6 +15,7 @@ class Commands(commands.Cog):
     @commands.command('di')
     async def d(self, ctx):
         item = ctx.message.attachments[0]
+        await ctx.send(f"Detecting...{item.filename}...🔎🔎🔎")
         img_data = await item.read()
         image = Image.open(io.BytesIO(img_data))
         result_stream = yolov8_service().detect_object_info(image, item.filename)
