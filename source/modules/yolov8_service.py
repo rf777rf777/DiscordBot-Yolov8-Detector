@@ -18,7 +18,7 @@ class yolov8_service:
         response = requests.put(detectAPI_info_url, files=files) 
         
         classNames = list(map(lambda item: item['className'], response.json()['detections']))
-        if len(classNames) <= 0:
+        if not classNames or len(classNames) <= 0:
             return None
 
         image = Image.open(resized_stream)
