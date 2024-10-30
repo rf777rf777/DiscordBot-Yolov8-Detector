@@ -13,8 +13,12 @@ if __name__ == "__main__":
     @bot.event
     async def on_ready():
         print(f'Logged in as {bot.user.name}')
-        await bot.load_extension('cogs.commands')
-        await bot.load_extension('cogs.events')
-  
+        try:
+            await bot.load_extension('cogs.commands')
+            await bot.load_extension('cogs.events')
+            synced = await bot.tree.sync()
+            print(f"Synced {len(synced)} command(s) across all guilds.")
+        except Exception as e:
+            print(e)
   
     bot.run(config['DISCORD']['TOKEN'])
