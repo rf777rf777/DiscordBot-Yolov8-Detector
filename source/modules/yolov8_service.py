@@ -8,18 +8,23 @@ class yolov8_service:
         pass
     
     def detect_object_info(self, image: Image, filename: str) -> io.BytesIO:
-        new_stream = self.__resizeAndGetImageStream(image=image)
+        resized_stream = self.__resizeAndGetImageStream(image=image)
         
         #Post to detect api
-        files = {'file': (filename, new_stream, 'multipart/form-data')}
-        response = requests.put('http://45.130.166.218:8000/Detection/Image/Info', files=files) 
-        #print(response.json())
+        files = {'file': (filename, resized_stream, 'multipart/form-data')}
         
-        image = Image.open(new_stream)
+        config = Config.get_config()     
+        detectAPI_info_url = config['DetectAPI']['Url'] + '/Info'
+        response = requests.put(detectAPI_info_url, files=files) 
+        
+        classNames = list(map(lambda item: item['className'], response.json()['detections']))
+        if len(classNames) <= 0:
+            return None
+
+        image = Image.open(resized_stream)
         draw = ImageDraw.Draw(image)
-        #font = ImageFont.truetype("/System/Library/Fonts/SFCompact.ttf", 20)  
         
-        colors = self.__getUniqueColors(len(list(map(lambda item: item['className'], response.json()['detections']))))
+        colors = self.__getUniqueColors(len(classNames))
         index = 0
         for detection in response.json()['detections']:
             color = colors[index]
@@ -32,13 +37,13 @@ class yolov8_service:
             
             #set frame and font style
             frame_color = self.__getRgb(color['background'])
-            font = ImageFont.truetype("/System/Library/Fonts/SFCompact.ttf", 40)
+            font = ImageFont.truetype("configs/fonts/Arial.ttf", 35)
             font_color = self.__getRgb(color['font'])
 
             #calculate frame position and draw the frame
             top_left = (x - w / 2, y - h / 2)
             bottom_right = (x + w / 2, y + h / 2)
-            draw.rectangle([top_left, bottom_right], outline=frame_color, width=8)
+            draw.rectangle([top_left, bottom_right], outline=frame_color, width=5)
             
             #use textbbox to calculate text width and height
             bbox = draw.textbbox((0, 0), label_text, font=font)
