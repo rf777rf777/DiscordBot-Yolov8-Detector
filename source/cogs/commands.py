@@ -31,6 +31,8 @@ class Commands(commands.Cog):
             #Get PIL image
             try:                      
                 image = Image.open(io.BytesIO(img_data))
+                if self.__isPNGFile(item.filename):
+                    image = image.convert('RGB') #if there are 4 channels(RGBA) covert to 3 channels(RGB)
             except:    
                 await ctx.send(embed=self.__getMessageEmbed(f"{item.filename}: Get PIL error", "⛔"))    
                 continue
@@ -48,6 +50,10 @@ class Commands(commands.Cog):
         files = [discord.File(fp=stream, filename=f'detected_{i}.jpg') for i, stream in enumerate(all_detect_result_stream)]
         await ctx.send(embed=self.__getMessageEmbed("Detected", "😎"), files=files)   
 
+    def __isPNGFile(self, filename:str) -> bool:
+        if filename.lower().endswith(('png')):
+            return True
+        return False
         
     def __isImageFile(self, filename:str) -> bool:
         if filename.lower().endswith(('png', 'jpg', 'jpeg')):
