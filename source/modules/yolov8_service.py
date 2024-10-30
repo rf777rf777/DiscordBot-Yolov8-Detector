@@ -20,15 +20,17 @@ class yolov8_service:
         classNames = list(map(lambda item: item['className'], response.json()['detections']))
         if not classNames or len(classNames) <= 0:
             return None
+        
+        uniqueClassNames = set(classNames)
+        colors = self.__getUniqueColors(len(uniqueClassNames))
 
+        #create dict about className: color
+        colorDict = dict(zip(uniqueClassNames, colors))
+        
         image = Image.open(resized_stream)
         draw = ImageDraw.Draw(image)
         
-        colors = self.__getUniqueColors(len(classNames))
-        index = 0
         for detection in response.json()['detections']:
-            color = colors[index]
-            index += 1
             
             x, y, w, h = detection['box'][0]
             className = detection['className']
@@ -36,6 +38,7 @@ class yolov8_service:
             label_text = f"{className} {confidence:.2f}"
             
             #set frame and font style
+            color = colorDict[className]
             frame_color = self.__getRgb(color['background'])
             font = ImageFont.truetype("configs/fonts/Arial.ttf", 35)
             font_color = self.__getRgb(color['font'])
