@@ -7,7 +7,7 @@ outputFolder="$buildFolder/outputs"
 appFolder="$slnFolder/source"  #Discord 應用的文件夾
 containerName="discordbot-yolov8-detector"
 accountName="rf777rf777"
-version=":1.0.2"
+version=":1.0.3"
 latest=":latest"
 
 ## CLEAR ######################################################################
