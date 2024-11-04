@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import io
+import io, aiohttp
 from PIL import Image
 from modules.yolov8_service import yolov8_service
 
@@ -11,7 +11,8 @@ class Commands(commands.Cog):
     @commands.command()
     async def hello(self, ctx):
         await ctx.send('Hello from command!') 
-    
+        await self.bot.reload_extension("cogs.commands")  
+          
     @commands.command('d')
     async def detect(self, ctx):
         #Check attachments
@@ -26,7 +27,7 @@ class Commands(commands.Cog):
             await ctx.send(embed=getMessageEmbed(f"{item.filename}: Detecting"))
             
             #Read image data
-            img_data = await item.read()
+            img_data = await download_attachment(item.url)        
 
             #Get PIL image
             try:                      
@@ -39,7 +40,7 @@ class Commands(commands.Cog):
 
             result_stream = yolov8_service().detect_object_info(image, item.filename)
             if result_stream is None:
-                await ctx.send(embed=getMessageEmbed(f"{item.filename}: Detected nothing", "😓"))
+                #await ctx.send(embed=getMessageEmbed(f"{item.filename}: Detected nothing", "😓"))
                 continue  
 
             all_detect_result_stream.append(result_stream)
@@ -74,8 +75,8 @@ async def detect_image_context(interaction: discord.Interaction, message: discor
         await interaction.followup.send(embed=getMessageEmbed(f"{item.filename}: Detecting"))
             
         #Read image data
-        img_data = await item.read()
-
+        img_data = await download_attachment(item.url)        
+        print("img_data read done!")
         #Get PIL image
         try:                      
             image = Image.open(io.BytesIO(img_data))
@@ -87,9 +88,11 @@ async def detect_image_context(interaction: discord.Interaction, message: discor
 
         result_stream = yolov8_service().detect_object_info(image, item.filename)
         if result_stream is None:
-            await interaction.followup.send(embed=getMessageEmbed(f"{item.filename}: Detected nothing", "😓"), ephemeral=True)            
+            #await interaction.followup.send(embed=getMessageEmbed(f"{item.filename}: Detected nothing", "😓"), ephemeral=True)            
             continue  
-        
+
+        print("detect done!")
+
         all_detect_result_stream.append(result_stream)
 
     if len(all_detect_result_stream) <= 0:
@@ -119,3 +122,16 @@ def getMessageEmbed(message:str, icon:str="🔊") -> discord.Embed:
         description=f"{icon} {message}",
         color=discord.Color.from_rgb(184, 134, 11)
     )
+    
+async def download_attachment(url, chunk_size=1024, timeout=60):
+    """分塊下載附件，避免大文件下載卡頓"""
+    data = bytearray()
+    timeout_settings = aiohttp.ClientTimeout(total=timeout)
+    async with aiohttp.ClientSession(timeout=timeout_settings) as session:
+        async with session.get(url) as response:
+            while True:
+                chunk = await response.content.read(chunk_size)
+                if not chunk:
+                    break
+                data.extend(chunk)
+    return bytes(data)

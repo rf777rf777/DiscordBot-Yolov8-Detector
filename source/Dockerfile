@@ -11,4 +11,4 @@ COPY . .
 RUN pip install --no-cache-dir wheel Discord.py requests pillow
 
 #設置容器的入口點並運行 main.py
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-u", "main.py"]
